@@ -1,0 +1,40 @@
+{
+    "source_type": "rclone",
+    "rclone_remote": "onedrive:",
+    "local_source": "~/OneDrive",
+    "backup_destination": "~/onedrive-backup",
+    "exclude_patterns": [
+        "*.tmp",
+        "~$*",
+        ".DS_Store",
+        "Thumbs.db",
+        "desktop.ini"
+    ],
+    "rsync_options": [
+        "--archive",
+        "--verbose",
+        "--human-readable",
+        "--progress",
+        "--delete-after",
+        "--partial"
+    ],
+    "rclone_options": [
+        "--verbose",
+        "--progress",
+        "--transfers",
+        "4",
+        "--checkers",
+        "8",
+        "--contimeout",
+        "60s",
+        "--timeout",
+        "300s",
+        "--retries",
+        "3",
+        "--low-level-retries",
+        "10"
+    ],
+    "log_file": "~/onedrive-backup/backup.log",
+    "keep_versions": 3,
+    "dry_run": false
+}
