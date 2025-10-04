@@ -32,7 +32,12 @@
         "--retries",
         "3",
         "--low-level-retries",
-        "10"
+        "10",
+        "--ignore-errors",
+        "--skip-links",
+        "--ignore-size",
+        "--ignore-checksum",
+        "--no-update-modtime"
     ],
     "log_file": "~/onedrive-backup/backup.log",
     "keep_versions": 3,

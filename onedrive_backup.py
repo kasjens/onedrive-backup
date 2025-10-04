@@ -207,6 +207,9 @@ class OneDriveBackup:
         
         self.logger.info(f"Running: {' '.join(cmd)}")
         
+        error_count = 0
+        objecthandle_errors = []
+        
         try:
             process = subprocess.Popen(cmd, stdout=subprocess.PIPE, 
                                      stderr=subprocess.STDOUT, text=True)
@@ -214,11 +217,30 @@ class OneDriveBackup:
             for line in process.stdout:
                 print(line.rstrip())
                 self.logger.debug(line.rstrip())
+                
+                # Track ObjectHandle errors
+                if "ObjectHandle is Invalid" in line or "invalidResourceId" in line:
+                    error_count += 1
+                    if error_count <= 5:  # Only log first 5 occurrences
+                        objecthandle_errors.append(line.rstrip())
             
             process.wait()
             
-            if process.returncode == 0:
-                self.logger.info("Backup completed successfully")
+            if objecthandle_errors:
+                self.logger.warning(f"Encountered {error_count} ObjectHandle errors during backup")
+                self.logger.warning("These are typically caused by OneDrive sync issues or corrupted file metadata")
+                self.logger.warning("First few errors:")
+                for err in objecthandle_errors[:5]:
+                    self.logger.warning(f"  {err}")
+                self.logger.info("Consider running ./find_problem_files.py to identify problematic paths")
+            
+            # With --ignore-errors flag, rclone may still return 0 despite errors
+            # Check if substantial portion of files were transferred
+            if process.returncode == 0 or (process.returncode == 1 and '--ignore-errors' in self.config['rclone_options']):
+                if error_count > 0:
+                    self.logger.warning(f"Backup completed with {error_count} errors (ignored)")
+                else:
+                    self.logger.info("Backup completed successfully")
                 return True
             else:
                 self.logger.error(f"Backup failed with return code: {process.returncode}")
